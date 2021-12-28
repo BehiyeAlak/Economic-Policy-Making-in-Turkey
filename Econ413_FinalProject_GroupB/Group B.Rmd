@@ -1,0 +1,427 @@
+---
+title: "ECON413 - Final Project - Group B"
+author: "Behiye Alak, Göktuğ Ülkar, Oğuz Kaan Atlıhan"
+date: "05/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+Sys.setlocale("LC_ALL",locale = "Turkish")
+
+library(ggplot2)
+library(GGally)
+library(ggthemes)
+library(pdftools)
+library(tm)
+library(stringi)
+library(stringr)
+library(data.table)
+library(WDI)
+library(CBRT)
+
+myCBRTKey <- "LI8X1maguQ"
+
+files <- list.files(pattern = "pdf$")
+opinions <- lapply(files, pdf_text)
+
+
+
+```
+
+## Economic Policy Making in Turkey (1996-2021) {.tabset .tabset-fade}
+
+### Inflation Targeting Policy
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+
+years <- c(1996:2021)
+
+#Enflasyon hedeflemesi*
+
+enfhed <- stri_count_fixed(opinions, "enflasyon hedeflemesi")
+enfhed[22] <- 1
+  
+DTW <- data.table(time =years, data = enfhed)
+
+enflabs <- labs(title = "Frequency of the Word 'Enflasyon Hedeflemesi'",
+                 x = "Years", y = "Frequency",
+                 caption = "Source: Annual Economic Programmes, Turkey  \n Figure 1")
+
+
+
+ggplot(DTW, aes(x=time, y=data,group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + enflabs + 
+  theme(legend.position = "none")+
+   scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+
+
+
+```
+
+  Without a doubt, one of the most important turning points for the Turkish economy was the 2001 economic crisis. In the aftermath of the crisis, Turkey has implemented some crucial institutional changes. These changes were made both to appease the foreign creditors such as IMF and making sure that the mistakes that caused the 2001 crisis were not repeated. One of these fundamental changes were made in the central bank policy. Previous to 2001, Turkey had a fixed currency basket regime. In this regime, the Central Bank of Turkey could not use an independent monetary policy since it had to prioritize exchange rate actions. This ensured that the central bank was a reactionary force to the changes in the exchange rate. However, this system was unable to achieve its goals and the inflation problem got out of control. In one of the most fundamental institutional changes, Turkey ditched the fixed exchange rate for a floating exchange rate. This development ensured that the central bank finally became able to pursue an independent monetary policy. Central Bank of Turkey implemented the policy inflation targeting (enflasyon hedeflemesi in Turkish), as inflation was one of the most prominent problems of Turkey. In the Figure 1 we can see that the first time the term inflation targeting was used in the Annual Economic Programmes, was indeed in 2002. The term has been used ever since, as the central bank continued this policy. This monetary policy system was able to solve the major inflation problem of Turkey.
+
+
+### Inflation
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+enflas <- stri_count_fixed(opinions, "enflasyon")
+enflas[22] <- 45
+  
+DTE <- data.table(time =years, data = enflas)
+
+ratelabs <- labs(title = "Frequency of the Word 'Enflasyon'",
+                 x = "Years", y = "Frequency",
+                 caption = "Annual Economic Programmes, Turkey \n Figure 2")
+
+
+
+ggplot(DTE, aes(x=time, y=data,group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + ratelabs + 
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+```
+
+
+  Inflation has been one of the major problems of the Turkish economy. Although the inflation has gotten significantly lower after the 2001 crisis and the implementation of the inflation targeting monetary policy, still there was such a strong emphasis on it. This emphasis can be seen in the Figure 2. Clearly, we cannot determine a definitive pattern. However, there are a few interesting talking points. Firstly in 1998, we can see a jump in the frequency of the word inflation in the Annual Economic Programs. This development is significant, as looking into the previous inflation values graph, we can see that in 1998 the inflation spiked to 140 percent. It seems that the Turkish policymakers were aware of this problem and emphasized it in their report. Another intriguing point is the decline in the usage of the word after the 2009 global economic crisis. We know foreign central banks such as FED and ECB have applied quantitative easing policies. The funds that were given as a result of these policies found their way to Turkey through portfolio investments, as the interest rates in Turkey were still positive while they were around 0 percent in the US and Europe. This short-term increase in the foreign funds might have reduced the concern for an inflation increase. This explanation explains both the decrease of the frequency of the word and the low and stable inflation rates just after 2009. However, the frequency of the word inflation increases after 2015, as Turkey started to experience higher inflation levels due to the Turkish lira losing value and general economic instability. This frequency chart can very well explain the different periods of the Turkish economy.
+
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+
+scatterhw <- WDI::WDI(country=c("TUR"), indicator=c("FR.INR.RINR", "NY.GDP.DEFL.KD.ZG"), start="1996",end="2020")
+setnames(scatterhw,"NY.GDP.DEFL.KD.ZG","INF")
+
+inflabs <- labs(title = "Inflation Rates of Turkey (GDP Deflector)",
+                subtitle = "Turkey (Yearly)",
+                x = "Years", y = "Inflation Rate (%)",
+                caption = "Source: World Development Indicators \n Figure 3")
+
+inflation_rate <- ggplot(scatterhw, aes(x=year, y=INF, color="inf")) + geom_line(size=1.5) + inflabs +
+  theme_minimal() + 
+  scale_color_manual(values="Red4") + 
+  theme(legend.position = "none")+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1998.00,2001.00,2009.00,2019.00), alpha = 0.4,
+             color = "darkgreen", size = 1.8)+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))
+
+
+plot(inflation_rate)
+```
+
+  Figure 3 portrays the chronic inflation problem that Turkey has faced prior to the 2001 crisis. The fixed exchange rate system was unable to deal with the high inflation rates. On the other hand, the inflation targeting monetary policy, which was implemented in 2002, was much more effective in dealing with inflation. Therefore, the importance of the inflation targeting policy can be further seen in this figure. Turkey managed to lower the inflation rates from around 140 percent in 1998 to single digits in 2005. The inflation rate in 2001, the year of the crisis, was around 50 percent. The inflation level never went back to those levels, which shows the success of the inflation targeting monetary policy. 
+
+### Central Bank
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+cb <- stri_count_fixed(opinions, "Merkez Bankas")
+cb[4]<-55
+cb[22]<- 20
+
+DTcb <- data.table(time =years, data = cb)
+
+cblabs <- labs(title = "Frequency of the Word 'Merkez Bankası'",
+                 x = "Years", y = "Frequency",
+                 caption = "Annual Economic Programmes, Turkey \n Figure 4")
+
+ggplot(DTcb, aes(x=time, y=data, group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + cblabs + 
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+```
+
+  One of the preconditions of the success of the inflation targeting monetary policy is an independent and active central bank.  We have mentioned that the inflation targeting policy was implemented in 2002 for Turkey. We can see this development as just after the 2001 crisis the frequency of the term central bank dramatically increased in Figure 4. Moreover, the central bank was given more duties in the economic system, as they had to ensure what the ideal inflation levels would be, and then they would try to reach those goals, as they implemented the inflation targeting monetary policy. Another interesting period in the frequency period is 2015 and onward. While Turkey has started to face both a currency devaluation problem, combined with an increase in the inflation rates, the frequency of the term central bank has constantly decreased. While this may be seen as counter-intuitive at the first sight, especially considering that the independence of the Central Bank of Turkey was consistently questioned during this period.
+
+### Interest Rate
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+faiz <- stri_count_fixed(opinions, "faiz oran")
+
+
+DTfaiz<- data.table(time =years, data = faiz)
+
+faizlabs <- labs(title = "Frequency of the Word 'Faiz Oranı'",
+                   x = "Years", y = "Frequency",
+                   caption = "Annual Economic Programmes, Turkey \n Figure 5")
+
+ggplot(DTfaiz, aes(x=time, y=data, group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + faizlabs + 
+  scale_x_continuous(breaks=seq(1998.00,2020.00,by=1))+
+  theme(legend.position = "none")+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+
+```
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+
+GDPdata <- WDI::WDI(indicator= c("NY.GDP.MKTP.PP.CD", "NY.GDP.MKTP.KD.ZG", "NY.GDP.MKTP.KD" , "FR.INR.DPST") , country= c("TUR"), start="1996", end="2019")
+setnames(GDPdata,"FR.INR.DPST", "interestrate")
+
+
+labsd <- labs(x="Years", y="Deposit Interest Rate (%)",
+              title = "Deposit Interest Rate",
+              subtitle= "Turkey (Yearly)",
+              caption = "Source: World Development Indicators \n Figure 6") 
+
+Graph4 <- ggplot(GDPdata, aes(x=year, y= interestrate, color="interestrate"))+
+  geom_line(size = 1.5)+
+  theme_minimal()+
+  scale_color_manual(values="Red4")+
+  geom_vline(xintercept= c(1998.00,2001.00,2009.00,2019.00), alpha = 0.4,
+             color = "darkgreen", size = 1.8)+
+  labsd+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))
+
+
+
+plot(Graph4)
+
+```
+
+  Throughout the world, the central banks have a few tools to ensure their goals, regardless of the monetary policy regime. Undoubtedly, the most important tool they have is the interest rates.  In the Figure 6, we have looked for the term interest rate (faiz oranı in Turkish).  The results are intriguing. Both previous to the 2001 crisis and after the term was extensively used. However, starting from 2010, we can see a decline in the usage, except for 2015. The high frequency after the 2001 crisis can be attributed to the high importance of the interest rates to ensure the success of the inflation targeting monetary policy. The relationship between the interest rates and the inflation rates are negative, so in order to ensure low inflation levels, the central bank might consider increasing interest rates. Interest rates are also important to attract foreign capital, which Turkey has benefited a lot after the 2001 crisis. While these might be the reasons for the high usage of the term, the low usage after 2010 can be attributed to an economic agenda change by the government. The government has started to attack the interest rates, starting to argue for a low-interest rate policy. Since these reports are created by the government, the de-emphasis of the term is likely to be caused by this new agenda. Further research on this subject can reveal the exact reasoning.
+
+### Tourism Policy
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+turism <- stri_count_fixed(opinions, "turizm")
+turism[22]<-65
+
+DTtur <- data.table(time =years, data = turism)
+
+turlabs <- labs(title = "Frequency of the Word 'Turizm'",
+               x = "Years", y = "Frequency",
+               caption = "Annual Economic Programmes, Turkey \n Figure 7")
+
+ggplot(DTtur, aes(x=time, y=data, group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + turlabs + 
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+
+```
+
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+
+data_tourism <- WDI::WDI(country=c("TUR"), indicator=c("ST.INT.RCPT.CD"), start="1996",end="2020")
+setnames(data_tourism,"ST.INT.RCPT.CD","turizm")
+
+dt_turizm <- data.table(data_tourism)
+dt_turizm[, gelir_bin := turizm/1000000]
+
+turizm_labs <- labs(title = "International Tourism Receipts",
+                   subtitle = "Turkey (Yearly)",
+                   x = "Years", y = "Total Receipts (Million $)",
+                   caption = "Source: World Development Indicators \n Figure 8")
+
+turizm_line <- ggplot(data = dt_turizm, mapping = aes(x = year, y = gelir_bin, color="gelir_bin" ))+
+  geom_line(size = 1.5)+
+  theme_minimal()+
+  turizm_labs+
+  scale_color_manual(values="Red4")+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  theme(legend.position = "none")+
+  geom_vline(xintercept= c(1998.00,2001.00,2009.00,2016.00), alpha = 0.4,
+             color = "darkgreen", size = 1.8)+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))
+
+
+plot(turizm_line)
+```
+  Since the year 1960 tourism in Turkey has started to take place as a policy issue in the five-year development plan. Countries have started to shape their tourism policies with the changing world since the 90s. Governments have produced tourism policies that compete with other countries, respond to demands and adapt to new conditions. When we look at the Figure 7 and Figure 8, There is an almost perfect fit between the frequency of word “tourism” in Turkey’s annual plans and Turkey's receipts from tourism. Tourism is one of the most productive sectors will be able to compete with other countries for Turkey. Especially after the 2000s, the importance of this has been understood better and some policies have been determined to increase tourism. Some of them are It is aimed to spread tourism throughout the year, paying attention to changing consumer demands. Importance has been attached to tourism investments in a structure that preserves the historical, natural, and social environment. It is aimed to increase the share of tourism revenues in the world. For example, an income of 11.6 billion dollars is targeted for 2005. In addition, tourism stimulus package to boost the number of tourists visiting Turkey was created. Although word frequency of tourism and receipts from it are increasing year by year, there are some sharp reductions for both graphics. The reasons for these reductions are 2001 and 2008 global crisis, Turkey's bilateral diplomatic problems with Russia in 2015 and terrorism in Turkey and COVID-19 pandemic.
+
+### IMF stand by Agreements
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+IMF <- stri_count_fixed(opinions, "IMF")
+IMF[22]<-3
+
+DTimf <- data.table(time =years, data = IMF)
+
+imflabs <- labs(title = "Frequency of the Word 'IMF'",
+               x = "Years", y = "Frequency",
+               caption = "Annual Economic Programmes, Turkey \n Figure 9")
+
+ggplot(DTimf, aes(x=time, y=data, group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + imflabs + 
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+```
+
+  Turkey has signed the long and short stand-by agreement with the IMF in various periods since 1960. In agreements signed before 2000 could not be achieved overall success of targeted and this has led to Turkey to sit at the negotiating table again with the IMF. According to Kazgan, the new stability policy implemented after 1980 has adopted an understanding that tends to reduce the share of the public sector in the economy with the effect of globalization. However, since this understanding does not have a theoretical, legal and economic basis in the country, the 24 January Program has caused important social and economic problems in the country (Kazgan, 1995). 17 stand-by arrangement was realized in the period of 1999-2002. Turkey again to cope with the problems caused by the liquidity crisis in 2000, 4 February 2002 and was forced to sign the 18 IMF stand-by agreement. The 19th stand-by arrangement was held on May 11, 2005, which will end on May 10, 2008. The purpose of the signing of the final agreement for Turkey to reduce inflation and maintain stability. Inflation Policy, the effort to reduce inflation to single digits and to EU standards will be carried out by preserving the independence of the Central Bank and ensuring fiscal discipline, and within this framework, official inflation targeting will be started until January 2006 and It was stated that inflation will be targeted as 8 percent in 2005, 5 percent in 2006 and 4 percent in 2007 and will be reduced to below 5 percent by the end of the program. When we look at the frequency chart, we can observe the increase in the frequency of the word IMF during agreement periods. According to Figure 3, with the last agreement signed in 2005, inflation started to fall and was brought under control. Therefore, the issue of the payment of IMF debts was on the agenda before 2008. Finally, we can observe that there is significant decline of frequency of IMF word in Turkey’s annual plans after the payment of IMF dept in Figure 9.
+
+### External Debt and Growth Policy
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+disborc <- stri_count_fixed(opinions, "dış borç")
+
+DTDB <- data.table(time =years, data = disborc)
+
+dblabs <- labs(title = "Frequency of the Word 'Dış Borç'",
+                  x = "Years", y = "Frequency",
+                  caption = "Annual Economic Programmes, Turkey \n Figure 10")
+
+ggplot(DTDB, aes(x=time, y=data, group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + dblabs + 
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+
+
+```
+
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+data_disborc <- getDataSeries(c("TP.DB.B01"), freq = 8)
+old <- names(data_disborc)[1:2]
+new <- c("Year","External_Debt")
+setnames(data_disborc, old, new)
+
+
+ylist2 <- seq(1996, 2020, by = 1)
+data_disborc2 <- subset(data_disborc, Year %in% ylist2)
+
+data_disborc2[, Debt := External_Debt/1000]
+
+disborc_labs <- labs(title = "Gross External Debt",
+                   subtitle = "Turkey (Yearly)",
+                   x = "Years", y = "Total External Debt (Billion $)",
+                   caption = "Source: CBRT Electronic Data Delivery System \n Figure 11")
+
+ ggplot(data = data_disborc2, mapping = aes(x = Year, y = Debt, color="Debt" ))+
+  geom_line(size = 1.5)+
+  theme_minimal()+
+  disborc_labs+
+  scale_color_manual(values="Red4")+
+  theme(legend.position = "none")+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1998.00,2001.00,2009.00,2019.00), alpha = 0.4,
+             color = "darkgreen", size = 1.8)+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))
+
+```
+
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+GDPdata <- WDI::WDI(indicator= c("NY.GDP.MKTP.PP.CD", "NY.GDP.MKTP.KD.ZG", "NY.GDP.MKTP.KD" , "FR.INR.DPST") , country= c("TUR"), start="1996", end="2019")
+setnames(GDPdata,"NY.GDP.MKTP.KD", "gdpcons")
+GDPdata2 <- data.table(GDPdata)
+GDPdata2[, xxx := gdpcons/1000000000]
+
+
+
+labsb <- labs(x="Years", y="Gross Domestic Product (Billion 2010 US$)",
+              title = "Gross Domestic Product",
+              subtitle= "Turkey (Yearly)" ,
+              caption = "Source: World Development Indicators \n Figure 12") 
+
+
+ ggplot(GDPdata2, aes(x=year, y= xxx, color="gdpcons"))+
+  geom_line(size = 1.5)+
+  theme_minimal()+
+  scale_color_manual(values = "Red4")+
+  geom_vline(xintercept= c(1998.00,2001.00,2009.00,2019.00), alpha = 0.4,
+             color = "darkgreen", size = 1.8)+
+  theme(legend.position = "none")+
+  labsb+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  scale_y_continuous(breaks=seq(0,1300,by=75))
+
+
+```
+  The relationship between economic growth and foreign borrowing could not be clearly demonstrated. Here, the economic size of the countries, their policies and economic bases affect the result. According to Figure 10, we can observe that the frequency of “external debt” word in Turkey’s annual plans has been starting to decrease regularly. To understand the reason for this, we need to examine Figure 11 and Figure 12. We can see that GDP is increasing regularly in Figure 11. Similarly, Turkey's foreign debt also has been increasing at the same level. Therefore, we can conclude that the growth-oriented economic policy changing has implemented with the AKP government after 2002. However, it is easy to see that AKP Government has ignored external debt issue. It would not be wrong to say that they see external debt as a tool for this GDP growth rather than a problem to be solved based on these three graphs because with the rise in external debt, frequency of “external debt” word should increase in Turkey’s annual economic plans, on the contrary, we observe a decreased.
+
+### Exchange Rate Policy
+
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+dovkur <- stri_count_fixed(opinions, "döviz kuru")
+dovkur[22]<-7
+
+DTK <- data.table(time =years, data = dovkur)
+
+exchangelabs <- labs(title = "Frequency of the Word 'Döviz Kuru'",
+                 x = "Years", y = "Frequency",
+                 caption = "Annual Economic Programmes, Turkey \n Figure 13")
+
+
+ggplot(DTK, aes(x=time, y=data,group = 1, color="Exchange Rate")) + 
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Blue4") +
+  theme_minimal() + exchangelabs + 
+  theme(legend.position = "none")+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1999,2001,2009,2019), alpha = 0.4,
+             color = "darkgreen", size = 1.8)
+
+```
+
+
+```{r, echo=F, eval=T, warning=F,  fig.width=15, fig.height=6}
+rate <- getDataSeries("TP.DK.USD.S.YTL",freq = 6,startDate = "01-01-1996",endDate = "01-01-2020")
+denge <- getDataSeries("TP.OD.Z01",freq = 6,startDate = "01-01-2002",endDate = "01-01-2015")
+
+ratelabs <- labs(title = "Exchange Rate",
+                 subtitle = "Turkey (Quarterly)",
+                 x = "Years", y = "US Dollar and Turkish Lira Exchange Rate",
+                 caption = "Source: CBRT Electronic Data Delivery System \n Figure 14")
+
+ggplot(rate, aes(x=time, y=TP.DK.USD.S.YTL, color="Exchange Rate")) +
+  geom_line(size=1.5) + 
+  scale_color_manual(values="Red4") + 
+  theme_minimal() + 
+  ratelabs +  
+  theme(legend.position = "none")+
+  theme(plot.caption = element_text(hjust = 0, size = rel(1), color = "gray20"))+
+  geom_vline(xintercept= c(1998.00,2001.00,2009.00,2019.00), alpha = 0.4,
+             color = "darkgreen", size = 1.8)+
+  scale_x_continuous(breaks=seq(1996.00,2020.00,by=1))
+
+```
+
+
+  It has been a total of four changes in the exchange rate regime in Turkey. First, until the 1980s, the fixed exchange rate regime was applied. The value of the Turkish lira was determined by the Central Bank and was kept constant at that value. Also, the devaluation that caused the depreciation of the Turkish lira was adjusted with interventions in the form of devaluation, and this time the new parity was determined as the fixed exchange rate. Second, in the 1980s, the exchange rate was determined in the market, but it switched to an interventional floating exchange rate regime, which was directed by the constant intervention of the Central Bank, and this regime continued until the 2000s. The third change took place in 1999 and 2000, and Turkey has implemented a disinflation program that fixing the exchange rate increases. However, this program was effective in the 1999 and 2001 crises. Eventually, Turkey has adopted a floating exchange rate regime after the 2001 crisis (Boratav, 2019). Therefore, Figure 13 shows the word exchange rate was mostly mentioned in the 2001 development plan. Also, after the floating exchange rate regime in 2001, there is a rapid rise in the exchange rate shown in Figure 14. On the other hand, although the CBRT has implemented a floating exchange rate regime since 2001, it has applied both to direct buying or selling interventions to reduce the volatility in the exchange rate market and to purchase auctions to accumulate reserves when the foreign exchange supply is higher than the foreign exchange demand. It can be thought that these practices also have a certain share in the divergence in the exchange rate market. In addition, it can be evaluated that the flexible monetary policy strategy started to be implemented by the CBRT in 2010 played a role in the deepening of the decoupling observed in the post-2009 crisis period. Figure 13 shows that the frequency of the term exchange rate in the 2019 Annual Economic Programs has increased significantly as the exchange rate rose to a high level in 2018 shown Figure 14.
+
+
+### References
+
+Boratav, K.(2019). Türkiye İktisat Tarihi: 1908-2015. 24. Baskı. İmge.
+
+Kazgan, G. (1995). Yeni Ekonomik Düzende Türkiye'nin Yeri. 2. Baskı. İstanbul: Altın Kitaplar. 
+
+
